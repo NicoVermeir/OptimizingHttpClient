@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/00. Api/">
+    <Project Path="WeatherApi/WeatherApi.csproj" Id="09ec72ff-8cc2-4817-81d3-f3c68349512e" />
+  </Folder>
+  <Folder Name="/01. Fundamentals/">
+    <Project Path="SocketExhaustion/SocketExhaustion.csproj" Id="9d5f4ff1-025d-4957-acfc-344ffdeaa0e1" />
+  </Folder>
+</Solution>
