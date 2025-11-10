@@ -1,0 +1,65 @@
+﻿@page "/weather"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather</h1>
+
+<p>This component demonstrates showing data.</p>
+
+@if (_forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th aria-label="Temperature in Celsius">Temp. (C)</th>
+                <th aria-label="Temperature in Fahrenheit">Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in _forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private WeatherForecast[]? _forecasts;
+
+    [Inject]
+    public required IHttpClientFactory Factory { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var client = Factory.CreateClient();
+
+        string json = await client.GetStringAsync("https://localhost:7060/weatherforecast");
+
+        _forecasts = JsonSerializer.Deserialize<WeatherForecast[]>(json);
+    }
+
+    private class WeatherForecast
+    {
+        [JsonPropertyName("date")]
+        public DateOnly Date { get; set; }
+        
+        [JsonPropertyName("temperatureC")]
+        public int TemperatureC { get; set; }
+        
+        [JsonPropertyName("summary")]
+        public string? Summary { get; set; }
+    }
+}
