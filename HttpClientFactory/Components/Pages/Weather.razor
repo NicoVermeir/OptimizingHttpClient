@@ -40,26 +40,10 @@ else
     private WeatherForecast[]? _forecasts;
 
     [Inject]
-    public required IHttpClientFactory Factory { get; set; }
+    public required WeatherClient Client { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var client = Factory.CreateClient();
-
-        string json = await client.GetStringAsync("https://localhost:7060/weatherforecast");
-
-        _forecasts = JsonSerializer.Deserialize<WeatherForecast[]>(json);
-    }
-
-    private class WeatherForecast
-    {
-        [JsonPropertyName("date")]
-        public DateOnly Date { get; set; }
-        
-        [JsonPropertyName("temperatureC")]
-        public int TemperatureC { get; set; }
-        
-        [JsonPropertyName("summary")]
-        public string? Summary { get; set; }
+        _forecasts = await Client.GetWeatherAsync();
     }
 }

@@ -1,0 +1,129 @@
+﻿@page "/retry-demo"
+@inject IHttpClientFactory HttpClientFactory
+@inject ILogger<RetryDemo> Logger
+@rendermode InteractiveServer
+
+<PageTitle>Polly Retry Demo</PageTitle>
+
+<h1>🔄 Polly Retry Mechanism Demo</h1>
+
+<div class="demo-container">
+    <div class="controls">
+        <h3>Test Scenarios</h3>
+        
+        <div class="scenario">
+            <button class="btn btn-primary" @onclick="TestFlakyEndpoint" disabled="@_isLoading">
+                Test Flaky Endpoint (50% failure rate)
+            </button>
+            <p class="text-muted">Will retry up to 3 times with exponential backoff</p>
+        </div>
+
+        <div class="scenario">
+            <button class="btn btn-success" @onclick="TestEventualSuccess" disabled="@_isLoading">
+                Test Eventual Success
+            </button>
+            <p class="text-muted">Fails 2 times, succeeds on 3rd retry</p>
+        </div>
+
+        <div class="scenario">
+            <button class="btn btn-danger" @onclick="TestCompleteFailure" disabled="@_isLoading">
+                Test Complete Failure
+            </button>
+            <p class="text-muted">Fails all retry attempts</p>
+        </div>
+    </div>
+
+    <div class="results">
+        <h3>Request Log</h3>
+        @if (_isLoading)
+        {
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        }
+        
+        <div class="log-container">
+            @foreach (var log in _logs)
+            {
+                <div class="log-entry @log.Type">
+                    <span class="timestamp">[@log.Timestamp.ToString("HH:mm:ss.fff")]</span>
+                    <span class="message">@log.Message</span>
+                </div>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(_result))
+        {
+            <div class="alert alert-info mt-3">
+                <strong>Final Result:</strong>
+                <pre>@_result</pre>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private bool _isLoading;
+    private string _result = string.Empty;
+    private List<LogEntry> _logs = new();
+
+    private record LogEntry(DateTime Timestamp, string Message, string Type);
+
+    private async Task TestFlakyEndpoint()
+    {
+        await ExecuteRequest("/api/flakyapi/weather?failureRate=50");
+    }
+
+    private async Task TestEventualSuccess()
+    {
+        await ExecuteRequest("/api/flakyapi/always-fail?attempts=2");
+    }
+
+    private async Task TestCompleteFailure()
+    {
+        await ExecuteRequest("/api/flakyapi/always-fail?attempts=10");
+    }
+
+    private async Task ExecuteRequest(string endpoint)
+    {
+        _isLoading = true;
+        _logs.Clear();
+        _result = string.Empty;
+        
+        AddLog("🚀 Starting request...", "info");
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("weatherApi");
+            
+            var response = await client.GetAsync(endpoint);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                _result = content;
+                AddLog($"✅ Request succeeded: {response.StatusCode}", "success");
+            }
+            else
+            {
+                AddLog($"❌ Request failed: {response.StatusCode}", "error");
+                _result = $"Failed with status: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            AddLog($"💥 Exception: {ex.Message}", "error");
+            _result = $"Exception: {ex.Message}";
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void AddLog(string message, string type)
+    {
+        _logs.Add(new LogEntry(DateTime.Now, message, type));
+        StateHasChanged();
+    }
+}
