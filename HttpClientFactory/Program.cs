@@ -1,38 +1,10 @@
-using HttpClientFactory;
 using HttpClientFactory.Components;
-using HttpClientFactory.Handlers;
-using OpenTelemetry;
-using OpenTelemetry.Trace;
-using Polly;
-using Polly.Retry;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-
-builder.Services.AddScoped<LoggingHandler>();
-builder.Services.AddScoped<AuthHandler>();
-
-using var tracerProvider = Sdk.CreateTracerProviderBuilder()
-    .AddHttpClientInstrumentation(options =>
-    {
-        options.EnrichWithHttpRequestMessage = (activity, message) =>
-        {
-            activity.SetTag("version", "1.0 beta");
-        };
-    })
-    .AddConsoleExporter()
-    .Build();
-
-builder.Services.AddHttpClient<WeatherClient>(client =>
-    {
-        client.BaseAddress = new Uri("https://localhost:7060");
-    })
-    .AddHttpMessageHandler<AuthHandler>()
-    .AddHttpMessageHandler<LoggingHandler>();
-
 
 var app = builder.Build();
 

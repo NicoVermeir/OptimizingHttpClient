@@ -39,11 +39,11 @@ else
 @code {
     private WeatherForecast[]? _forecasts;
 
-    [Inject]
-    public required WeatherClient Client { get; set; }
+    private readonly HttpClient _client = new HttpClient();
 
     protected override async Task OnInitializedAsync()
     {
-        _forecasts = await Client.GetWeatherAsync();
+        string json = await _client.GetStringAsync("https://localhost:7060/weatherforecasts");
+        _forecasts = JsonSerializer.Deserialize<WeatherForecast[]>(json);
     }
 }

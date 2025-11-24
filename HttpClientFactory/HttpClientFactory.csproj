@@ -7,11 +7,4 @@
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.14.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
-    <PackageReference Include="Polly.Core" Version="8.6.4" />
-    <PackageReference Include="Polly.Extensions" Version="8.6.4" />
-  </ItemGroup>
-
 </Project>

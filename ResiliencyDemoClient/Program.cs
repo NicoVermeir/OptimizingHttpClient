@@ -1,6 +1,4 @@
-﻿using Polly;
-using Polly.Extensions.Http;
-using ResiliencyDemoClient.Components;
+﻿using ResiliencyDemoClient.Components;
 using ResiliencyDemoClient.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,17 +9,12 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddTransient<LoggingHandler>();
 
-// Create the retry policy we want
-var retryPolicy = HttpPolicyExtensions.HandleTransientHttpError()
-    .GetCircuitBreakerPolicy();
-
 builder.Services.AddHttpClient("weatherApi", client =>
 {
     client.BaseAddress = new Uri("https://localhost:7060");
     client.Timeout = TimeSpan.FromSeconds(30);
 })
-.AddHttpMessageHandler<LoggingHandler>()
-.AddPolicyHandler(retryPolicy);
+.AddHttpMessageHandler<LoggingHandler>();
 
 
 var app = builder.Build();
