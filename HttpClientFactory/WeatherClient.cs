@@ -7,25 +7,12 @@ public class WeatherClient(HttpClient client)
 {
     public async Task<WeatherForecast[]> GetWeatherAsync()
     {
-        try
-        {
-            HttpResponseMessage response = await client.GetAsync("/weatherforecasts");
-            response.EnsureSuccessStatusCode();
+        HttpResponseMessage response = await client.GetAsync("/weatherforecasts");
+        response.EnsureSuccessStatusCode();
 
-            string json = await response.Content.ReadAsStringAsync();
+        string json = await response.Content.ReadAsStringAsync();
 
-            return JsonSerializer.Deserialize<WeatherForecast[]>(json);
-        }
-        catch (HttpRequestException ex)
-        {
-            Console.WriteLine(ex);
-            return [];
-        }
-        catch (TaskCanceledException ex)
-        {
-            Console.WriteLine(ex);
-            return [];
-        }
+        return JsonSerializer.Deserialize<WeatherForecast[]>(json);
     }
 }
 
